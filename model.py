@@ -5,14 +5,14 @@ class EncoderRNN(nn.Module):
     def __init__(self, input_size, hidden_size):
         super(EncoderRNN, self).__init__()
         self.hidden_size = hidden_size
-        self.gru = nn.GRU(input_size, hidden_size)
+        self.gru = nn.GRU(input_size, hidden_size, batch_first=True)
 
     def forward(self, input, hidden):
         output, hidden = self.gru(input, hidden)
         return output, hidden
 
-    def initHidden(self, device='cpu'):
-        return torch.zeros(1, 1, self.hidden_size, device=device)
+    def initHidden(self, device='cpu', batch_size=1):
+        return torch.zeros(1, batch_size, self.hidden_size, device=device)
 
 class DecoderRNN(nn.Module):
     def __init__(self, hidden_size, output_size):
@@ -31,6 +31,6 @@ class DecoderRNN(nn.Module):
         return output
 
     def initHidden(self, hidden_state, device='cpu'):
-        self.hidden_state = hidden_state.squeeze(1)
-        self.cell_state = torch.zeros(1, self.hidden_size, device=device)
-        return
+        batch_size = hidden_state.shape[1]
+        self.hidden_state = hidden_state.squeeze(0)
+        self.cell_state = torch.zeros(batch_size, self.hidden_size, device=device)

@@ -1,10 +1,7 @@
 import numpy as np
 import torch
+from utils import one_hot
 
-def one_hot(total_class_numb, state):
-    one_hot_emb = np.zeros(total_class_numb)
-    one_hot_emb[state] = 1
-    return one_hot_emb
 
 def random_binary_word(probability_of_01=(0.5, 0.5), probability_of_end=0.1, max_size=20):
     binary_word = ""
@@ -23,23 +20,7 @@ def random_binary_word(probability_of_01=(0.5, 0.5), probability_of_end=0.1, max
     tokens.append(one_hot(3, 2))
     return tokens, binary_word
 
-def tokens2word(token_list):
-    word = ''
-    for token in token_list:
-        state = np.argmax(token)
-        word += str(state)
-    return word
-
-def word2tokens(binary_word, total_class_numb=3):
-    tokens = np.zeros([len(binary_word), total_class_numb])
-    for i,symbol in enumerate(binary_word):
-        tokens[i,:] = one_hot(total_class_numb, int(symbol))
-    return tokens
-
-def tensor2word(token_tensor):
-    word = ''
-    for i in range(token_tensor.shape[0]):
-        state = torch.argmax(token_tensor[i, :])
-        state = int(state.item())
-        word += str(state)
-    return word
+def primitive_data_loader(ground_truth_tokens, batch_size=1):
+    rand_number = np.random.choice(np.arange(ground_truth_tokens.shape[0]), size=batch_size)
+    mini_batch = ground_truth_tokens[rand_number,:,:]
+    return mini_batch

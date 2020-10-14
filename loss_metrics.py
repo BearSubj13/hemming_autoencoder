@@ -36,6 +36,12 @@ def soft_hemming_simlpe_loss(input_tokens, ground_truth):
     loss = ce(reshaped_tokens, sequences_gt)
     return loss
 
+def hemming_simple_loss(input_tokens, ground_truth):
+    hemming_dist = torch.abs(input_tokens - ground_truth).sum(dim=2)/2
+    hemming_dist = hemming_dist.sum(dim=1).mean()
+    return hemming_dist
+
+
 def hemming_distance(word1, word2):
     assert len(word1) == len(word2)
     counter= 0

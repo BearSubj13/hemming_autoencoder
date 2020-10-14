@@ -1,14 +1,14 @@
 import torch
 from model import EncoderRNN, DecoderRNN
 from dataloader import random_binary_word, primitive_data_loader
-from loss_metrics import soft_hemming_loss, hemming_distance
+from loss_metrics import soft_hemming_loss, hemming_distance, soft_hemming_simlpe_loss
 import numpy as np
 from utils import mode_word, tokens2word, tensor2word, word2tokens
 
 device = 'cpu'
 token_size = 3
 hidden_size = 100
-batch_size = 2
+batch_size = 1
 max_sequence_length = 20
 
 encoder = EncoderRNN(hidden_size=hidden_size, input_size=token_size)
@@ -42,7 +42,8 @@ def decoder_encoder_inferance(encoder, decoder, binary_word, device='cpu', batch
 
   return tensor2word(tokens_predicted[0,:,:])
 
-def train_iteration(ground_truth_tokens, encoder, decoder, encoder_optimizer, decoder_optimizer, temperature):
+def train_iteration(ground_truth_tokens, encoder, decoder, encoder_optimizer, \
+                    decoder_optimizer, temperature, loss_function):
   hidden_state = encoder.initHidden(device, batch_size)
   _, hidden_state = encoder(ground_truth_tokens, hidden_state)
   tokens_predicted = ground_truth_tokens[:, 0, :].unsqueeze(1)
@@ -55,7 +56,7 @@ def train_iteration(ground_truth_tokens, encoder, decoder, encoder_optimizer, de
     output_gumbel[end_tokens, :] = tokens_predicted[:, -1, :][end_tokens].detach()
     tokens_predicted = torch.cat((tokens_predicted, output_gumbel.unsqueeze(1)), dim=1)
 
-  loss = soft_hemming_loss(tokens_predicted, ground_truth_tokens.squeeze())
+  loss = loss_function(tokens_predicted, ground_truth_tokens)
 
   encoder_optimizer.zero_grad()
   decoder_optimizer.zero_grad()
@@ -70,25 +71,25 @@ def train_iteration(ground_truth_tokens, encoder, decoder, encoder_optimizer, de
 word =  '010100110101001022222'
 word2 = '000101000000011011002'
 word3 = '111011100010022222222'
-ground_truth_tokens = word2tokens([word, word2, word3])
+ground_truth_tokens = word2tokens([word3])
 ground_truth_tokens = torch.FloatTensor(ground_truth_tokens)
 #ground_truth_tokens = ground_truth_tokens.unsqueeze(1)
 ground_truth_tokens = ground_truth_tokens.to(device)
 
-
 encoder.train()
 decoder.train()
 
-for epoch in range(10):
-  temperature = 0.6 + 2.0/(epoch+1)
+for epoch in range(12):
+  temperature = 1#0.6 + 2.0/(epoch+1)
   # for param in encoder_optimizer.param_groups:
   #   param['lr'] = param['lr']/(epoch+1)
   # for param in decoder_optimizer.param_groups:
   #   param['lr'] = param['lr']/(epoch+1)
   loss_list = []
-  for i in range(50):
-    batch_tokens = primitive_data_loader(ground_truth_tokens, batch_size=2)
-    loss = train_iteration(batch_tokens, encoder, decoder, encoder_optimizer, decoder_optimizer, temperature)
+  for i in range(100):
+    batch_tokens = primitive_data_loader(ground_truth_tokens, batch_size=batch_size)
+    loss = train_iteration(batch_tokens, encoder, decoder, encoder_optimizer, \
+                           decoder_optimizer, temperature, soft_hemming_simlpe_loss)
     loss_list.append(loss)
   print(sum(loss_list) / len(loss_list))
 
@@ -97,7 +98,7 @@ for epoch in range(10):
 #encoder.load_state_dict(torch.load('encoder.pth'))
 #decoder.load_state_dict(torch.load('decoder.pth'))
 
-word=word
+word=word3
 n_samples = 300
 samples = []
 distance = []

@@ -24,3 +24,10 @@ def primitive_data_loader(ground_truth_tokens, batch_size=1):
     rand_number = np.random.choice(np.arange(ground_truth_tokens.shape[0]), size=batch_size)
     mini_batch = ground_truth_tokens[rand_number,:,:]
     return mini_batch
+
+#ground_truth_tokens
+words =  ['010100110101001022222',
+          '110010001110011001122',
+          '000101000000011011002',
+          '111011100010022222222',
+          '100101101010010102222']

@@ -51,3 +51,9 @@ def tensor2word(token_tensor):
     state = int(state.item())
     word += str(state)
   return word
+
+
+
+
+
+

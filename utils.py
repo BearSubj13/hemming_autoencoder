@@ -9,7 +9,8 @@ def one_hot(total_class_numb, state):
   one_hot_emb[state] = 1
   return one_hot_emb
 
-def mode_word(samples):
+# mode of each letter in a word
+def mode_word_elementwise(samples):
   binary_word = ''
   np_char = np.empty(shape=[len(samples), len(samples[0])])
   for i in range(len(samples)):
@@ -20,6 +21,13 @@ def mode_word(samples):
     frequent_letter = max(count_dict, key=count_dict.get)
     binary_word += str(int(frequent_letter))
   return binary_word
+
+
+def mode_word(samples):
+    count_dict = dict((x, samples.count(x)) for x in set(samples))
+    frequentest_word = max(count_dict, key=count_dict.get)
+    return frequentest_word
+
 
 def tokens2word(token_list):
     word = ''

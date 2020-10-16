@@ -1,5 +1,5 @@
 import torch
-from loss_metrics import hemming_simple_loss
+from loss_metrics import hemming_simple_loss, hemming_loss_with_size_penalty
 from model import EncoderRNN, DecoderRNN
 from dataloader import words, primitive_data_loader
 from utils import  word2tokens
@@ -33,16 +33,20 @@ for epoch in range(n_epoch):
     #hemming distance can't be larger than the length of a string
     for i in range(iteration_per_epoch):
         batch_tokens = primitive_data_loader(ground_truth_tokens, batch_size=batch_size)
+        if i % 50 == 0:
+            loss_f = hemming_simple_loss
+        else:
+            loss_f = hemming_simple_loss
         loss = train_iteration(batch_tokens, encoder, decoder, encoder_optimizer, \
-                               decoder_optimizer, temperature, hemming_simple_loss)
+                               decoder_optimizer, temperature, loss_f)
         loss_list.append(loss)
     min_loss = min(mean_loss, min_loss)
     mean_loss = sum(loss_list) / len(loss_list)
     print('epoch {0}, loss: {1:2.2f}, temperature: {2:2.2f}, lr: {3:2.5f}'.\
           format(epoch, mean_loss, temperature, current_lr))
-    loss_gain = min_loss-mean_loss
-    relative_loss_gain = loss_gain/mean_loss
-    if (loss_gain > 0.5 or relative_loss_gain > 0.05) and mean_loss < 5.5:
+    loss_gain = min_loss - mean_loss
+    relative_loss_gain = loss_gain/(mean_loss+0.000000000001)
+    if (loss_gain > 0.2 or relative_loss_gain > 0.05) and mean_loss < 6.0:
         temperature = temperature/decay_coeff_temperature
         for param in encoder_optimizer.param_groups:
           param['lr'] = param['lr']/decay_coeff_lr
@@ -50,8 +54,8 @@ for epoch in range(n_epoch):
           param['lr'] = param['lr']/decay_coeff_lr
           current_lr = param['lr']
         #save the weights for the best results
-        torch.save(encoder.state_dict(), 'encoder.pth')
-        torch.save(decoder.state_dict(), 'decoder.pth')
+        torch.save(encoder.state_dict(), 'encoder_deleteme.pth')
+        torch.save(decoder.state_dict(), 'decoder_deleteme.pth')
 
 
 

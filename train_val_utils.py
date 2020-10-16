@@ -2,6 +2,8 @@ import torch
 import torch.nn.functional as F
 from consts import max_sequence_length
 
+from loss_metrics import hemming_loss_with_size_penalty
+
 def decoder_encoder_inferance(input_tokens, encoder, decoder,\
                      temperature=1, max_sequence_length=max_sequence_length):
   encoder.eval()
@@ -9,8 +11,9 @@ def decoder_encoder_inferance(input_tokens, encoder, decoder,\
   batch_size = input_tokens.shape[0]
   device = input_tokens.device
 
-  hidden_state = encoder.initHidden(device, batch_size)
-  _, hidden_state = encoder(input_tokens, hidden_state)
+  encoder.initHidden(device, batch_size)
+  _, hidden_state = encoder(input_tokens)
+  hidden_state = hidden_state[0][1,:,:].unsqueeze(dim=0)
   tokens_predicted = input_tokens[:, 0, :].unsqueeze(1)
   decoder.initHidden(hidden_state, device)
 
@@ -30,8 +33,9 @@ def train_iteration(ground_truth_tokens, encoder, decoder, encoder_optimizer, \
                     max_sequence_length=max_sequence_length):
   batch_size = ground_truth_tokens.shape[0]
   device = ground_truth_tokens.device
-  hidden_state = encoder.initHidden(device, batch_size)
-  _, hidden_state = encoder(ground_truth_tokens, hidden_state)
+  encoder.initHidden(device, batch_size)
+  _, hidden_state = encoder(ground_truth_tokens)
+  hidden_state = hidden_state[0][1,:,:].unsqueeze(dim=0)
   tokens_predicted = ground_truth_tokens[:, 0, :].unsqueeze(1)
   decoder.initHidden(hidden_state, device=device)
   for k in range(max_sequence_length):
@@ -42,6 +46,7 @@ def train_iteration(ground_truth_tokens, encoder, decoder, encoder_optimizer, \
     output_gumbel[end_tokens, :] = tokens_predicted[:, -1, :][end_tokens].detach()
     tokens_predicted = torch.cat((tokens_predicted, output_gumbel.unsqueeze(1)), dim=1)
 
+  #loss2 = hemming_loss_with_size_penalty(tokens_predicted, ground_truth_tokens)#for debug only
   loss = loss_function(tokens_predicted, ground_truth_tokens)
 
   encoder_optimizer.zero_grad()

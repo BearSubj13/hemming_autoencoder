@@ -17,6 +17,7 @@ def random_binary_word(probability_of_01=(0.5, 0.5), probability_of_end=0.1, max
             state = 2
         else:
             state = np.random.choice(np.arange(0, 3), p=probability_state)
+    binary_word = binary_word + '2'
     tokens.append(one_hot(3, 2))
     return tokens, binary_word
 
@@ -31,3 +32,4 @@ words =  ['010100110101001022222',
           '000101000000011011002',
           '111011100010022222222',
           '100101101010010102222']
+words = words + 200*[random_binary_word(probability_of_end=0.05)[1] for i in range(30)]

@@ -7,18 +7,18 @@ from consts import hidden_size, device, token_size
 from train_val_utils import decoder_encoder_inferance
 from model import EncoderRNN, DecoderRNN
 
-n_samples = 500
+n_samples = 1000
 samples = []
 distance = []
-word = words[4]
-temperature = 0.94
+word = words[1]
+temperature = 1.0
 
 encoder = EncoderRNN(hidden_size=hidden_size, input_size=token_size)
 decoder = DecoderRNN(hidden_size=hidden_size, output_size=token_size)
 encoder = encoder.to(device)
 decoder = decoder.to(device)
-encoder.load_state_dict(torch.load('encoder.pth'))
-decoder.load_state_dict(torch.load('decoder.pth'))
+encoder.load_state_dict(torch.load('encoder_deleteme.pth'))
+decoder.load_state_dict(torch.load('decoder_deleteme.pth'))
 
 input_tokens = word2tokens(n_samples*[word])
 input_tokens = torch.FloatTensor(input_tokens)
@@ -29,7 +29,7 @@ for i in range(n_samples):
   sample = tokens2word(result_tokens[i,:,:].detach().cpu().numpy())
   samples.append(sample)
   if i % 25 == 0:
-    print('sample:    ', sample)
+    print('sample:        ', sample)
   hd = hemming_distance(sample, word)
   distance.append(hd)
 

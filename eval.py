@@ -10,8 +10,8 @@ from model import EncoderRNN, DecoderRNN
 n_samples = 1000
 samples = []
 distance = []
-word = words[1]
-temperature = 1.0
+word = words[2]
+temperature = 1.17
 
 encoder = EncoderRNN(hidden_size=hidden_size, input_size=token_size)
 decoder = DecoderRNN(hidden_size=hidden_size, output_size=token_size)

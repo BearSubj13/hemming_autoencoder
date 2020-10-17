@@ -1,6 +1,6 @@
 token_size = 3
-hidden_size = 175
-batch_size = 2000
+hidden_size = 100
+batch_size = 5000
 max_sequence_length = 20
 device = 'cuda'
 init_temperature = 1.3

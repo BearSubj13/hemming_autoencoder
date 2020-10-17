@@ -32,5 +32,5 @@ words =  ['010100110101001022222',
           '000101000000011011002',
           '111011100010022222222',
           '100101101010010102222']
-words = words + [random_binary_word(probability_of_end=0.05)[1] for i in range(100)]
-words = 50*words
+words = words + [random_binary_word(probability_of_end=0.05)[1] for i in range(10000)]
+words = words

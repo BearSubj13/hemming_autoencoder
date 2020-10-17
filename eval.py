@@ -19,6 +19,8 @@ encoder = encoder.to(device)
 decoder = decoder.to(device)
 encoder.load_state_dict(torch.load('encoder_deleteme.pth'))
 decoder.load_state_dict(torch.load('decoder_deleteme.pth'))
+encoder.eval()
+decoder.eval()
 
 input_tokens = word2tokens(n_samples*[word])
 input_tokens = torch.FloatTensor(input_tokens)

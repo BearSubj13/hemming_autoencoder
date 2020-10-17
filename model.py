@@ -23,7 +23,10 @@ class DecoderRNN(nn.Module):
         self.hidden_size = hidden_size
         self.lstm_cell0 = nn.LSTMCell(output_size, hidden_size)
         self.lstm_cell1 = nn.LSTMCell(hidden_size, hidden_size)
-        self.out = nn.Sequential(nn.Linear(hidden_size, int(hidden_size/2)), nn.ReLU(), nn.Linear(int(hidden_size/2), output_size))
+        #self.lstm_cell2 = nn.LSTMCell(hidden_size, hidden_size)
+        self.out = nn.Sequential(nn.Linear(hidden_size, int(hidden_size/2)), nn.ReLU(), \
+                                 nn.Linear(int(hidden_size/2), 2*output_size), nn.ReLU(), \
+                                 nn.Linear(2*output_size, output_size))
 
     def forward(self, input):
         hidden, cell_state = self.lstm_cell0(input, (self.cell_state0, self.hidden_state0))
@@ -32,6 +35,9 @@ class DecoderRNN(nn.Module):
         hidden, cell_state = self.lstm_cell1(self.hidden_state0, (self.cell_state1, self.hidden_state1))
         self.hidden_state1 = hidden.detach()
         self.cell_state1 = cell_state.detach()
+        # hidden, cell_state = self.lstm_cell2(self.hidden_state1, (self.cell_state2, self.hidden_state2))
+        # self.hidden_state2 = hidden.detach()
+        # self.cell_state2 = cell_state.detach()
         output = self.out(hidden)
         return output
 
@@ -41,3 +47,5 @@ class DecoderRNN(nn.Module):
         self.cell_state0 = torch.zeros(batch_size, self.hidden_size, device=device)
         self.hidden_state1 = torch.zeros(batch_size, self.hidden_size, device=device)
         self.cell_state1 = torch.zeros(batch_size, self.hidden_size, device=device)
+        # self.hidden_state2 = torch.zeros(batch_size, self.hidden_size, device=device)
+        # self.cell_state2 = torch.zeros(batch_size, self.hidden_size, device=device)

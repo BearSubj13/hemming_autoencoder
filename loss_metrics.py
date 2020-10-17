@@ -35,12 +35,6 @@ def hemming_loss_with_size_penalty(input_tokens, ground_truth):
     return weighted_distance + hemming_dist
 
 
-def soft_hemming_simlpe_loss(input_tokens, ground_truth):
-    ce = nn.CrossEntropyLoss()
-    sequences_gt = torch.argmax(ground_truth, dim=2)
-    reshaped_tokens = input_tokens.transpose(1,2)
-    loss = ce(reshaped_tokens, sequences_gt)
-    return loss
 
 def hemming_simple_loss(input_tokens, ground_truth):
     hemming_dist = torch.abs(input_tokens - ground_truth).sum(dim=2)/2

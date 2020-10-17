@@ -1,12 +1,12 @@
 token_size = 3
-hidden_size = 150
+hidden_size = 175
 batch_size = 2000
 max_sequence_length = 20
 device = 'cuda'
 init_temperature = 1.3
-decay_coeff_temperature = 1.05
-decay_coeff_lr = 1.1
-n_epoch = 200
+decay_coeff_temperature = 1.01
+decay_coeff_lr = 1.03
+n_epoch = 210
 iteration_per_epoch = 500
 learning_rate = 0.001
 end_token = '2'

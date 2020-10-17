@@ -46,8 +46,8 @@ for epoch in range(n_epoch):
           format(epoch, mean_loss, temperature, current_lr))
     loss_gain = min_loss - mean_loss
     relative_loss_gain = loss_gain/(mean_loss+0.000000000001)
-    if (loss_gain > 0.2 or relative_loss_gain > 0.05) and mean_loss < 6.0:
-        temperature = temperature/decay_coeff_temperature
+    if (loss_gain > 0.01 or relative_loss_gain > 0.005) and mean_loss < 4.0:
+        temperature = max(0.4,temperature/decay_coeff_temperature)
         for param in encoder_optimizer.param_groups:
           param['lr'] = param['lr']/decay_coeff_lr
         for param in decoder_optimizer.param_groups:

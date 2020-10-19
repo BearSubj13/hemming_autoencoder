@@ -1,24 +1,24 @@
 import numpy as np
-import torch
+from consts import token_size, end_token, max_sequence_length
 from utils import one_hot
 
 
-def random_binary_word(probability_of_01=(0.5, 0.5), probability_of_end=0.1, max_size=20):
+def random_binary_word(probability_of_01= (token_size-1)*[1/(token_size-1)], probability_of_end=0.1, max_size=max_sequence_length):
     binary_word = ""
     tokens = []
-    state = np.random.choice(np.arange(0, 2), p=probability_of_01)
+    state = np.random.choice(np.arange(0, token_size-1), p=probability_of_01)
     probability_state = np.array(probability_of_01)*(1-probability_of_end)
     probability_state = np.append(probability_state, probability_of_end)
     i = 0
     for i in range(max_size):
         binary_word += str(state)
-        tokens.append(one_hot(3, state))
-        if binary_word[-1] == '2':
-            state = 2
+        tokens.append(one_hot(token_size, state))
+        if binary_word[-1] == end_token:
+            state = token_size - 1
         else:
-            state = np.random.choice(np.arange(0, 3), p=probability_state)
-    binary_word = binary_word + '2'
-    tokens.append(one_hot(3, 2))
+            state = np.random.choice(np.arange(0, token_size), p=probability_state)
+    binary_word = binary_word + end_token
+    tokens.append(one_hot(token_size, token_size-1))
     return tokens, binary_word
 
 def primitive_data_loader(ground_truth_tokens, batch_size=1):
@@ -27,10 +27,10 @@ def primitive_data_loader(ground_truth_tokens, batch_size=1):
     return mini_batch
 
 #ground_truth_tokens
-words =  ['010100110101001022222',
-          '110010001110011001122',
-          '000101000000011011002',
-          '111011100010022222222',
-          '100101101010010102222']
-words = words + [random_binary_word(probability_of_end=0.05)[1] for i in range(10000)]
-words = words
+words =  ['0101001101010010'+5*end_token,
+          '1100100011100110011'+2*end_token,
+          '00010100000001101100'+end_token,
+          '1110111000100'+8*end_token,
+          '10010110101001010'+4*end_token]
+words = words + [random_binary_word(probability_of_end=0.02)[1] for i in range(1000)]
+words = 100*words

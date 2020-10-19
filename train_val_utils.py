@@ -1,6 +1,6 @@
 import torch
 import torch.nn.functional as F
-from consts import max_sequence_length
+from consts import max_sequence_length, token_size
 
 
 def decoder_encoder_inferance(input_tokens, encoder, decoder,\
@@ -22,7 +22,7 @@ def decoder_encoder_inferance(input_tokens, encoder, decoder,\
   for k in range(max_sequence_length):
     output = decoder(tokens_predicted[:,-1,:])
     output_gumbel = F.gumbel_softmax(output, tau=temperature, hard=True)
-    end_tokens = torch.argmax(tokens_predicted[:, -1, :], dim=1) == 2
+    end_tokens = torch.argmax(tokens_predicted[:, -1, :], dim=1) == token_size-1
     output_gumbel[end_tokens,:] = tokens_predicted[:, -1, :][end_tokens].detach()
     tokens_predicted = torch.cat((tokens_predicted, output_gumbel.unsqueeze(1)), dim=1)
 

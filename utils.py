@@ -1,8 +1,7 @@
 import numpy as np
 import torch
+from consts import token_size, end_token
 
-def gumbel_softmax(logits, temperature):
-    pass
 
 def one_hot(total_class_numb, state):
   one_hot_emb = np.zeros(total_class_numb)
@@ -17,7 +16,7 @@ def mode_word_elementwise(samples):
     np_char[i, :] = list(samples[i])
   for j in range(np_char.shape[1]):
     char_list = list(np_char[:,j])
-    count_dict = dict((x,char_list.count(x)) for x in set(char_list))
+    count_dict = dict((x, char_list.count(x)) for x in set(char_list))
     frequent_letter = max(count_dict, key=count_dict.get)
     binary_word += str(int(frequent_letter))
   return binary_word
@@ -37,7 +36,7 @@ def tokens2word(token_list):
     return word
 
 
-def word2tokens(binary_word, total_class_numb=3):
+def word2tokens(binary_word, total_class_numb = token_size):
   batch_size = len(binary_word) if type(binary_word) is list else 1
   if type(binary_word) is not list:
       tokens = np.zeros([len(binary_word), total_class_numb])

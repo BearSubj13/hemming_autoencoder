@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 
 
+#from https://pytorchnlp.readthedocs.io/en/latest/_modules/torchnlp/nn/attention.html
 class Attention(nn.Module):
     """ Applies attention mechanism on the `context` using the `query`.
 
@@ -94,11 +95,22 @@ class Attention(nn.Module):
 
 
 class EncoderRNN(nn.Module):
-    def __init__(self, input_size, hidden_size, num_layers=1):
+    def __init__(self, input_size, hidden_size, latent_size=None, num_layers=1):
         super(EncoderRNN, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.lstm = nn.LSTM(input_size, hidden_size, batch_first=True, num_layers=num_layers)
+        if not latent_size:
+            latent_size = hidden_size
+        self.projector_fc1 = nn.Linear(hidden_size, hidden_size, bias=False)
+        self.projector_fc2 = nn.Linear(hidden_size, latent_size, bias=False)
+
+    def projector(self, input):
+        output = self.projector_fc1(input)
+        output = nn.functional.relu_(output)
+        output = self.projector_fc2(output)
+        output = nn.functional.normalize(output, p=2, dim=1)
+        return output
 
     def forward(self, input):
         output, hidden = self.lstm(input, (self.c0, self.h0))
@@ -138,6 +150,7 @@ class DecoderRNN(nn.Module):
         self.context = torch.cat((self.context, hidden.detach().unsqueeze(1)), dim=1)  
         return output
 
+
     def initHidden(self, hidden_state, device='cpu'):
         batch_size = hidden_state.shape[1]
         self.encoder_hidden = hidden_state.squeeze(0)
@@ -148,3 +161,43 @@ class DecoderRNN(nn.Module):
         self.cell_state1 = torch.zeros(batch_size, self.hidden_size, device=device)
         # self.hidden_state2 = torch.zeros(batch_size, self.hidden_size, device=device)
         # self.cell_state2 = torch.zeros(batch_size, self.hidden_size, device=device)
+
+
+class SimpleNet(nn.Module):
+    '''
+    predicts the hemming distance between words by their latent vectors
+    '''
+    def __init__(self, latent_size):
+        #nn.Module.__init__(self)
+        super().__init__()
+        self.latent_size = latent_size
+        self.fc1 = nn.Linear(2*latent_size, latent_size)
+        self.bn_1 = nn.BatchNorm1d(latent_size)
+        self.fc2 = nn.Linear(latent_size, int(latent_size/2))
+        self.bn_2 = nn.BatchNorm1d(int(latent_size/2))
+        self.fc3 = nn.Linear(int(latent_size/2), int(latent_size/4))
+        self.bn_3 = nn.BatchNorm1d(int(latent_size/4))
+        self.fc4 = nn.Linear(int(latent_size/4), 1)
+        self.leaky_relu = nn.LeakyReLU(negative_slope=0.1, inplace=True)
+
+    def prediction(self, x):
+        x = self.fc1(x)
+        x = self.leaky_relu(x)
+        x = self.bn_1(x)
+
+        x = self.fc2(x)
+        x = self.leaky_relu(x)
+        x = self.bn_2(x)
+
+        x = self.fc3(x)
+        x = self.leaky_relu(x)
+        x = self.bn_3(x)
+
+        x = self.fc4(x)
+        x = torch.exp(x)
+        return x
+
+    def forward(self, x, y):
+        input = torch.cat((x, y), dim=1)
+        output = self.prediction(input).squeeze()
+        return output

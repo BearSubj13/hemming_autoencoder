@@ -35,16 +35,20 @@ def hemming_loss_with_size_penalty(input_tokens, ground_truth):
     return weighted_distance + hemming_dist
 
 
-
 def hemming_simple_loss(input_tokens, ground_truth):
     hemming_dist = torch.abs(input_tokens - ground_truth).sum(dim=2)/2
     hemming_dist = hemming_dist.sum(dim=1).mean()
     return hemming_dist
 
 
+def hemming_distance_batch(input_tokens, ground_truth):
+    hemming_dist = torch.abs(input_tokens - ground_truth).sum(dim=2)/2
+    hemming_dist = hemming_dist.sum(dim=1)
+    return hemming_dist
+
 def hemming_distance(word1, word2):
     assert len(word1) == len(word2)
-    counter= 0
+    counter = 0
     for x,y in zip(word1, word2):
         counter = counter + (x!=y)
     return counter

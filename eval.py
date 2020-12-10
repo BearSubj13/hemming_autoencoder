@@ -1,34 +1,45 @@
+import os
+print(os.getcwd())
+
 import torch
 from loss_metrics import hemming_distance
-from dataloader import words
 import numpy as np
 from utils import mode_word, tokens2word, word2tokens
 from consts import hidden_size, device, token_size
 from train_val_utils import decoder_encoder_inferance
 from model import EncoderRNN, DecoderRNN
 
+from data_loading import EnglishWordDataset
+from consts import *
+
 n_samples = 1000
 samples = []
 distance = []
-word = words[4]
+word = 'homosapience########'
 temperature = 1.0
 
 encoder = EncoderRNN(hidden_size=hidden_size, input_size=token_size)
 decoder = DecoderRNN(hidden_size=hidden_size, output_size=token_size)
 encoder = encoder.to(device)
 decoder = decoder.to(device)
-encoder.load_state_dict(torch.load('encoder_deleteme.pth'))
-decoder.load_state_dict(torch.load('decoder_deleteme.pth'))
+encoder.load_state_dict(torch.load('weights/english_encoder.pth'))
+decoder.load_state_dict(torch.load('weights/english_decoder.pth'))
 encoder.eval()
 decoder.eval()
 
-input_tokens = word2tokens(n_samples*[word])
+english_dataset = EnglishWordDataset('words_dictionary.json', return_token=True)
+
+input_tokens = english_dataset.word2token(word)
 input_tokens = torch.FloatTensor(input_tokens)
+input_tokens = input_tokens.unsqueeze(0)
+input_tokens = input_tokens.repeat(n_samples,1,1)
+
 input_tokens = input_tokens.to(device)
 
 result_tokens = decoder_encoder_inferance(input_tokens, encoder, decoder, temperature=temperature)
+
 for i in range(n_samples):
-  sample = tokens2word(result_tokens[i,:,:].detach().cpu().numpy())
+  sample = english_dataset.token2word(result_tokens[i,:,:].detach().cpu())
   samples.append(sample)
   if i % 25 == 0:
     print('sample:        ', sample)
